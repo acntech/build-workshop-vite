@@ -512,46 +512,67 @@ Linting helps maintain code quality by checking for potential errors and enforci
 
 ### 8.1 Install ESLint and Additional Plugins
 
-Vite comes with ESLint pre-configured, but let's add some additional plugins:
+Vite comes with ESLint pre-configured, but let's update to the modern flat config and add additional plugins:
 
 ```bash
-npm install --save-dev eslint-plugin-react eslint-plugin-react-hooks
+npm install --save-dev @eslint/js eslint-plugin-react eslint-plugin-react-hooks
 ```
 
 ### 8.2 Update ESLint Configuration
 
-Update the existing `.eslintrc.cjs` file (Vite uses CommonJS for config files):
+Replace the existing `.eslintrc.cjs` file with a modern `eslint.config.js` file (ESLint 9+ flat config format):
 
 ```javascript
-module.exports = {
-  root: true,
-  env: { browser: true, es2020: true },
-  extends: [
-    'eslint:recommended',
-    '@eslint/js/recommended',
-    'plugin:react/recommended',
-    'plugin:react/jsx-runtime',
-    'plugin:react-hooks/recommended',
-  ],
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
-  parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
-  settings: { react: { version: '18.2' } },
-  plugins: ['react-refresh'],
-  rules: {
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
-    'no-unused-vars': 'error',
-    'no-console': 'warn',
-    'react/prop-types': 'error',
-    'react-hooks/rules-of-hooks': 'error',
-    'react-hooks/exhaustive-deps': 'warn',
-    'semi': ['error', 'always'],
-    'quotes': ['error', 'single'],
-    'indent': ['error', 2],
+import js from '@eslint/js';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+
+export default [
+  {
+    ignores: ['dist'],
   },
-}
+  {
+    files: ['**/*.{js,jsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        ...globalThis,
+      },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
+        sourceType: 'module',
+      },
+    },
+    settings: { 
+      react: { version: '18.3' } 
+    },
+    plugins: {
+      react,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      ...react.configs['jsx-runtime'].rules,
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+      'no-unused-vars': 'error',
+      'no-console': 'warn',
+      'react/prop-types': 'error',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'semi': ['error', 'always'],
+      'quotes': ['error', 'single'],
+      'indent': ['error', 2],
+    },
+  },
+];
 ```
 
 ### 8.3 Linting Scripts
