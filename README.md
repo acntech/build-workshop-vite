@@ -515,7 +515,7 @@ Linting helps maintain code quality by checking for potential errors and enforci
 Vite comes with ESLint pre-configured, but let's update to the modern flat config and add additional plugins:
 
 ```bash
-npm install --save-dev @eslint/js eslint-plugin-react eslint-plugin-react-hooks
+npm install --save-dev @eslint/js eslint-plugin-react eslint-plugin-react-hooks globals
 ```
 
 ### 8.2 Update ESLint Configuration
@@ -524,6 +524,7 @@ Replace the existing `.eslintrc.cjs` file with a modern `eslint.config.js` file 
 
 ```javascript
 import js from '@eslint/js';
+import globals from 'globals';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
@@ -537,7 +538,8 @@ export default [
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
-        ...globalThis,
+        ...globals.browser,
+        ...globals.es2020,
       },
       parserOptions: {
         ecmaVersion: 'latest',
@@ -546,7 +548,7 @@ export default [
       },
     },
     settings: { 
-      react: { version: '18.3' } 
+      react: { version: '19.1' } 
     },
     plugins: {
       react,
@@ -584,13 +586,14 @@ If you created your project with TypeScript, replace the above JavaScript config
 **First, install the TypeScript ESLint dependencies:**
 
 ```bash
-npm install --save-dev @eslint/js @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react eslint-plugin-react-hooks
+npm install --save-dev @eslint/js @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react eslint-plugin-react-hooks globals
 ```
 
 **Then create your `eslint.config.js` file:**
 
 ```javascript
 import js from '@eslint/js';
+import globals from 'globals';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import react from 'eslint-plugin-react';
@@ -607,7 +610,8 @@ export default [
       parser: tsparser,
       ecmaVersion: 2020,
       globals: {
-        ...globalThis,
+        ...globals.browser,
+        ...globals.es2020,
       },
       parserOptions: {
         ecmaVersion: 'latest',
@@ -617,7 +621,7 @@ export default [
       },
     },
     settings: { 
-      react: { version: '18.3' } 
+      react: { version: '19.1' } 
     },
     plugins: {
       '@typescript-eslint': tseslint,
