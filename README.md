@@ -37,8 +37,10 @@ By the end of this workshop, you'll have:
 9. [Step 8: Setting Up Linting](#step-8-setting-up-linting)
 10. [Step 9: Fixing Linting Errors](#step-9-fixing-linting-errors)
 11. [Step 10: Building for Production](#step-10-building-for-production)
-12. [Troubleshooting](#troubleshooting)
-13. [Next Steps](#next-steps)
+12. [Step 11: Adding Tests with React Testing Library](#step-11-adding-tests-with-react-testing-library)
+13. [Step 12: Setting Up GitHub Actions CI/CD Pipeline](#step-12-setting-up-github-actions-cicd-pipeline)
+14. [Troubleshooting](#troubleshooting)
+15. [Next Steps](#next-steps)
 
 ---
 
@@ -55,6 +57,16 @@ By the end of this workshop, you'll have:
 ## Step 1: Installing Node.js and npm
 
 Node.js is a JavaScript runtime that allows you to run JavaScript outside of a browser. npm (Node Package Manager) comes bundled with Node.js and helps you manage project dependencies.
+
+> 💡 **Pro Tip:** Consider using Node Version Manager (nvm) to manage multiple Node.js versions:
+> - **Windows**: Install nvm-windows from [https://github.com/coreybutler/nvm-windows](https://github.com/coreybutler/nvm-windows)
+> - **macOS/Linux**: Install nvm from [https://github.com/nvm-sh/nvm](https://github.com/nvm-sh/nvm)
+> 
+> With nvm, you can easily switch between Node.js versions:
+> ```bash
+> nvm install --lts
+> nvm use --lts
+> ```
 
 ### 1.1 Download Node.js
 
@@ -106,20 +118,25 @@ npm install -g npm@latest
 
 ## Step 2: Setting Up Your First React App
 
-React is a popular JavaScript library for building user interfaces. We'll use Create React App, which sets up a modern React development environment with no configuration.
+React is a popular JavaScript library for building user interfaces. We'll use Vite, which is a fast, modern build tool that provides an excellent development experience with instant hot module replacement.
 
 ### 2.1 Create a New React Application
 
 ```bash
-npx create-react-app my-build-workshop
-cd my-build-workshop
+npm create vite@latest {your app name}
+cd {your app name}
+npm install
 ```
 
-> 💡 **What is npx?** npx is a package runner that comes with npm. It allows you to run packages without installing them globally.
+When prompted:
+1. Select "React" as the framework
+2. Choose "JavaScript" as the variant (or TypeScript if you prefer)
+
+> 💡 **What is Vite?** Vite is a build tool that provides fast development server startup and instant hot module replacement. It's much faster than traditional bundlers and has become the modern standard for React development.
 
 ### 2.2 Explore What Was Created
 
-The command above created a new directory with a complete React application. Let's see what was generated:
+The command above created a new directory with a complete React application powered by Vite. Let's see what was generated:
 
 ```bash
 ls -la
@@ -133,7 +150,8 @@ You should see files like:
 - `node_modules/` - Installed dependencies
 - `public/` - Static files
 - `src/` - Source code
-- `README.md` - Project documentation
+- `index.html` - Main HTML file (note: this is in the root, not in public/)
+- `vite.config.js` - Vite configuration
 
 ---
 
@@ -152,26 +170,38 @@ Open `package.json` and you'll see something like:
 ```json
 {
   "name": "my-build-workshop",
-  "version": "0.1.0",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext js,jsx --fix",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
+    "react-dom": "^18.2.0"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "vite": "^5.2.0"
   }
 }
 ```
 
-### 3.2 src/App.js
+### 3.2 src/App.jsx
 This is your main React component. Open it to see the default React application code.
 
-### 3.3 public/index.html
-This is the HTML template where your React app will be mounted.
+### 3.3 index.html
+This is the HTML template where your React app will be mounted. Note that with Vite, this file is in the root directory, not in a public folder.
+
+### 3.4 vite.config.js
+This file contains Vite-specific configuration for your build process.
 
 ---
 
@@ -180,25 +210,27 @@ This is the HTML template where your React app will be mounted.
 ### 4.1 Start the Development Server
 
 ```bash
-npm start
+npm run dev
 ```
 
 This command:
-- Starts a development server
-- Opens your browser automatically
-- Watches for file changes and reloads automatically
+- Starts Vite's development server
+- Opens your browser automatically (or shows you the URL to visit)
+- Watches for file changes and reloads instantly with Hot Module Replacement (HMR)
 
-You should see your React app running at `http://localhost:3000`
+You should see your React app running at `http://localhost:5173` (Vite's default port)
 
 > 🎉 **Congratulations!** You've successfully created and run your first React application!
 
 ### 4.2 Make Your First Change
 
-1. Open `src/App.js` in your text editor
-2. Find the text "Edit src/App.js and save to reload"
+1. Open `src/App.jsx` in your text editor
+2. Find the text that says "Vite + React" or similar
 3. Change it to "Welcome to the Build Tools Workshop!"
 4. Save the file
-5. Watch the browser automatically reload with your changes
+5. Watch the browser automatically reload with your changes instantly
+
+> 🚀 **Amazing!** Notice how fast the changes appear - this is Vite's Hot Module Replacement in action!
 
 ---
 
@@ -220,7 +252,7 @@ npm install moment
 
 ### 5.3 Update Your App to Use Dependencies
 
-Replace the contents of `src/App.js` with:
+Replace the contents of `src/App.jsx` with:
 
 ```javascript
 import React, { useState, useEffect } from 'react';
@@ -291,7 +323,7 @@ Let's intentionally introduce some errors to learn how to read and fix build out
 
 ### 6.1 Syntax Error Exercise
 
-Replace the `fetchJoke` function in `src/App.js` with this broken version:
+Replace the `fetchJoke` function in `src/App.jsx` with this broken version:
 
 ```javascript
 const fetchJoke = async () => {
@@ -313,17 +345,17 @@ Save the file and observe:
 
 The error output will look something like:
 ```
-Failed to compile.
+✘ [ERROR] Expected "}" but found end of file
 
-./src/App.js
-  Line 32:1:  Parsing error: Unexpected token
+    src/App.jsx:32:1:
+      32 │   }
+         ╵   ^
 
-   30 |   } catch (error) {
-   31 |     setJoke('Failed to load joke. Check your internet connection!');
->  32 |   }
-      |   ^
-   33 |   // Missing closing brace - this will cause an error!
-   34 | };
+  The file ends here but we expected to find a closing "}" to match the opening "{" here:
+
+    src/App.jsx:20:25:
+      20 │ const fetchJoke = async () => {
+         ╵                         ^
 ```
 
 ### 6.3 Fix the Error
@@ -341,7 +373,7 @@ const fetchJoke = async () => {
 };
 ```
 
-> 🎯 **Learning Point:** Build tools provide immediate feedback about errors in your code. Always read the error messages carefully - they usually tell you exactly what's wrong and where to fix it.
+> 🎯 **Learning Point:** Vite provides immediate feedback about errors in your code with clear, helpful error messages. The development server shows errors both in the terminal and in an overlay in your browser. Always read the error messages carefully - they usually tell you exactly what's wrong and where to fix it.
 
 ---
 
@@ -357,7 +389,7 @@ npm install bootstrap
 
 ### 7.2 Import Bootstrap
 
-Add this import to the top of `src/App.js`:
+Add this import to the top of `src/App.jsx`:
 
 ```javascript
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -428,7 +460,17 @@ Replace the contents of `src/App.css` with:
 
 ### 7.4 Update the JSX to Use Bootstrap Classes
 
-Update your `App.js` return statement:
+First, update your imports in `src/App.jsx` to include Bootstrap:
+
+```javascript
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import moment from 'moment';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
+```
+
+Then update your `App.jsx` return statement:
 
 ```javascript
 return (
@@ -470,69 +512,55 @@ Linting helps maintain code quality by checking for potential errors and enforci
 
 ### 8.1 Install ESLint and Additional Plugins
 
+Vite comes with ESLint pre-configured, but let's add some additional plugins:
+
 ```bash
-npm install --save-dev eslint eslint-plugin-react eslint-plugin-react-hooks
+npm install --save-dev eslint-plugin-react eslint-plugin-react-hooks
 ```
 
-### 8.2 Create ESLint Configuration
+### 8.2 Update ESLint Configuration
 
-Create a file called `.eslintrc.json` in your project root:
+Update the existing `.eslintrc.cjs` file (Vite uses CommonJS for config files):
 
-```json
-{
-  "env": {
-    "browser": true,
-    "es2021": true
-  },
-  "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+```javascript
+module.exports = {
+  root: true,
+  env: { browser: true, es2020: true },
+  extends: [
+    'eslint:recommended',
+    '@eslint/js/recommended',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
+    'plugin:react-hooks/recommended',
   ],
-  "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    },
-    "ecmaVersion": 12,
-    "sourceType": "module"
+  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+  settings: { react: { version: '18.2' } },
+  plugins: ['react-refresh'],
+  rules: {
+    'react-refresh/only-export-components': [
+      'warn',
+      { allowConstantExport: true },
+    ],
+    'no-unused-vars': 'error',
+    'no-console': 'warn',
+    'react/prop-types': 'error',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
+    'semi': ['error', 'always'],
+    'quotes': ['error', 'single'],
+    'indent': ['error', 2],
   },
-  "plugins": [
-    "react",
-    "react-hooks"
-  ],
-  "rules": {
-    "no-unused-vars": "error",
-    "no-console": "warn",
-    "react/prop-types": "error",
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
-    "semi": ["error", "always"],
-    "quotes": ["error", "single"],
-    "indent": ["error", 2]
-  },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
-  }
 }
 ```
 
-### 8.3 Add Linting Script to package.json
+### 8.3 Linting Scripts
 
-Add this script to your `package.json`:
+The linting scripts are already configured in your `package.json`. You can run:
 
-```json
-{
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "lint": "eslint src/**/*.js",
-    "lint:fix": "eslint src/**/*.js --fix"
-  }
-}
+```bash
+npm run lint        # Check for linting issues
+npm run lint:fix    # Auto-fix issues where possible
 ```
 
 ---
@@ -543,7 +571,7 @@ Now let's introduce some code that will trigger linting errors, then fix them.
 
 ### 9.1 Add Code with Linting Issues
 
-Replace your `src/App.js` with this version that has several linting issues:
+Replace your `src/App.jsx` with this version that has several linting issues:
 
 ```javascript
 import React, { useState, useEffect } from 'react';
@@ -730,31 +758,29 @@ npm run build
 ```
 
 This command:
-- Creates optimized, minified files
-- Generates a `build/` directory
+- Creates optimized, minified files using Vite's build process
+- Generates a `dist/` directory with your built application
 - Prepares your app for deployment
+- Uses Rollup under the hood for optimal bundling
 
-### 10.2 Serve the Production Build Locally
+### 10.2 Preview the Production Build
 
-Install a simple HTTP server:
-
-```bash
-npm install -g serve
-```
-
-Serve your built application:
+Vite provides a built-in preview command:
 
 ```bash
-serve -s build
+npm run preview
 ```
 
-Visit the URL shown (usually `http://localhost:3000`) to see your production build!
+This serves your built application locally so you can test the production build.
+
+Visit the URL shown (usually `http://localhost:4173`) to see your production build!
 
 ### 10.3 Compare Development vs Production
 
 Notice the differences:
-- **Development**: Large file sizes, readable code, hot reloading
+- **Development**: Large file sizes, readable code, instant hot reloading
 - **Production**: Small file sizes, minified code, optimized for performance
+- **Build tool**: Vite uses esbuild for development and Rollup for production builds
 
 ---
 
@@ -768,7 +794,8 @@ Notice the differences:
 - Check your PATH environment variable
 
 **Port already in use:**
-- Try a different port: `npm start -- --port 3001`
+- Vite uses port 5173 by default
+- Try a different port: `npm run dev -- --port 3001`
 - Or kill the process using the port
 
 **Module not found errors:**
@@ -784,6 +811,268 @@ Notice the differences:
 - Check for syntax errors in your code
 - Ensure all dependencies are properly installed
 - Look at the build output for specific error messages
+- Try deleting `node_modules` and running `npm install` again
+
+## Step 11: Adding Tests with React Testing Library
+
+Testing is crucial for maintaining code quality and catching bugs early. Let's add tests to our application.
+
+### 11.1 Install Testing Dependencies
+
+React Testing Library and Jest come pre-configured with Vite, but let's add some additional testing utilities:
+
+```bash
+npm install --save-dev @testing-library/jest-dom @testing-library/user-event
+```
+
+### 11.2 Set up Test Configuration
+
+Create a `src/setupTests.js` file:
+
+```javascript
+import '@testing-library/jest-dom';
+```
+
+### 11.3 Create Your First Test
+
+Create a new file `src/App.test.jsx`:
+
+```javascript
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
+import App from './App';
+
+// Mock axios to avoid making real API calls in tests
+vi.mock('axios');
+import axios from 'axios';
+
+describe('App Component', () => {
+  beforeEach(() => {
+    // Reset mocks before each test
+    vi.clearAllMocks();
+  });
+
+  test('renders workshop title', () => {
+    render(<App />);
+    const titleElement = screen.getByText(/Build Tools Workshop/i);
+    expect(titleElement).toBeInTheDocument();
+  });
+
+  test('displays current time section', () => {
+    render(<App />);
+    const timeSection = screen.getByText(/Current Time/i);
+    expect(timeSection).toBeInTheDocument();
+  });
+
+  test('displays programming joke section', () => {
+    render(<App />);
+    const jokeSection = screen.getByText(/Programming Joke/i);
+    expect(jokeSection).toBeInTheDocument();
+  });
+
+  test('clicking joke button triggers new joke fetch', async () => {
+    const mockJokeResponse = {
+      data: [{
+        setup: 'Why do programmers prefer dark mode?',
+        punchline: 'Because light attracts bugs!'
+      }]
+    };
+
+    axios.get.mockResolvedValueOnce(mockJokeResponse);
+
+    render(<App />);
+    const jokeButton = screen.getByText(/Get New Joke/i);
+    
+    await userEvent.click(jokeButton);
+
+    await waitFor(() => {
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://official-joke-api.appspot.com/jokes/programming/random'
+      );
+    });
+  });
+
+  test('handles joke fetch error gracefully', async () => {
+    axios.get.mockRejectedValueOnce(new Error('Network error'));
+
+    render(<App />);
+    
+    await waitFor(() => {
+      const errorMessage = screen.getByText(/Failed to load joke/i);
+      expect(errorMessage).toBeInTheDocument();
+    });
+  });
+});
+```
+
+### 11.4 Update package.json Scripts
+
+Add test scripts to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext js,jsx --fix",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  }
+}
+```
+
+### 11.5 Install Vitest for Testing
+
+```bash
+npm install --save-dev vitest @vitest/ui @vitest/coverage-v8 jsdom
+```
+
+### 11.6 Configure Vitest
+
+Update your `vite.config.js`:
+
+```javascript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.js',
+  },
+})
+```
+
+### 11.7 Run Your Tests
+
+```bash
+npm test
+```
+
+You should see your tests run and pass! 🎉
+
+---
+
+## Step 12: Setting Up GitHub Actions CI/CD Pipeline
+
+Let's set up automated testing and deployment using GitHub Actions.
+
+### 12.1 Create GitHub Actions Workflow
+
+Create a `.github/workflows/ci-cd.yml` file in your project root:
+
+```yaml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linting
+      run: npm run lint
+
+    - name: Run tests
+      run: npm test
+
+    - name: Run build
+      run: npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files-${{ matrix.node-version }}
+        path: dist/
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build project
+      run: npm run build
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+```
+
+### 12.2 Understanding the Pipeline
+
+This GitHub Actions workflow:
+
+1. **Triggers**: Runs on pushes to `main`/`develop` branches and pull requests to `main`
+2. **Matrix Testing**: Tests against multiple Node.js versions (18.x and 20.x)
+3. **Quality Checks**: Runs linting, tests, and builds
+4. **Deployment**: Automatically deploys to GitHub Pages when changes are pushed to `main`
+
+### 12.3 Set Up GitHub Pages (Optional)
+
+To enable GitHub Pages deployment:
+
+1. Go to your GitHub repository settings
+2. Navigate to "Pages" section
+3. Select "GitHub Actions" as the source
+4. Your app will be deployed automatically when you push to main
+
+### 12.4 Add Status Badges to README
+
+Add these badges to the top of your README to show build status:
+
+```markdown
+![CI/CD Pipeline](https://github.com/your-username/my-build-workshop/workflows/CI/CD%20Pipeline/badge.svg)
+![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
+```
+
+### 12.5 Testing the Pipeline
+
+1. Commit your changes and push to GitHub
+2. Go to the "Actions" tab in your repository
+3. Watch your pipeline run automatically
+4. Check that all steps pass successfully
 
 ---
 
@@ -793,25 +1082,17 @@ Congratulations! You've completed the Build Tools Workshop. Here's what you can 
 
 ### 🔍 Further Learning
 
-1. **Testing**: Learn about unit testing with Jest and React Testing Library
-2. **TypeScript**: Add type safety to your JavaScript
-3. **State Management**: Explore Redux or Context API for complex state
-4. **Deployment**: Deploy your app to platforms like Netlify, Vercel, or AWS
-5. **Performance**: Learn about code splitting and optimization techniques
+1. **TypeScript**: Add type safety to your JavaScript
+2. **State Management**: Explore Redux or Context API for complex state
+3. **Performance**: Learn about code splitting and optimization techniques
+4. **Advanced Testing**: Explore integration testing and end-to-end testing with Playwright or Cypress
+5. **Deployment**: Deploy your app to platforms like Netlify, Vercel, or AWS
 
 ### 🛠️ Advanced Build Tools
 
-- **Webpack**: Understanding the bundler behind Create React App
-- **Vite**: A faster alternative to webpack
+- **Webpack**: Understanding module bundlers and build processes
 - **Docker**: Containerizing your applications
-- **CI/CD**: Automated testing and deployment pipelines
-
-### 📚 Resources
-
-- [React Documentation](https://reactjs.org/docs)
-- [npm Documentation](https://docs.npmjs.com/)
-- [ESLint Rules](https://eslint.org/docs/rules/)
-- [Bootstrap Documentation](https://getbootstrap.com/docs)
+- **Monorepos**: Managing multiple packages with tools like Lerna or Nx
 
 ---
 
@@ -819,23 +1100,24 @@ Congratulations! You've completed the Build Tools Workshop. Here's what you can 
 
 You've successfully:
 - ✅ Set up a development environment with Node.js and npm
-- ✅ Created a React application from scratch
+- ✅ Created a React application from scratch using Vite
 - ✅ Added and managed dependencies
 - ✅ Debugged build errors by reading error output
 - ✅ Implemented styling with external CSS frameworks
 - ✅ Set up and used linting tools for code quality
 - ✅ Built your application for production
+- ✅ Added comprehensive tests with React Testing Library
+- ✅ Set up automated CI/CD pipelines with GitHub Actions
 
-You're now ready to start building amazing web applications! Remember, the best way to learn is by building projects and experimenting with new tools and libraries.
+You're now ready to start building amazing web applications with modern build tools! Remember, the best way to learn is by building projects and experimenting with new tools and libraries.
+
+### 📚 Resources
+
+- [React Documentation](https://reactjs.org/docs)
+- [Vite Documentation](https://vitejs.dev/guide/)
+- [npm Documentation](https://docs.npmjs.com/)
+- [ESLint Rules](https://eslint.org/docs/rules/)
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
 
 Happy coding! 🚀
-
----
-
-**Questions or Need Help?**
-- Check the troubleshooting section above
-- Ask your mentor or team lead
-- Search for solutions on Stack Overflow
-- Consult the official documentation for any tools you're using
-
-*This workshop was created for new joiners at [Your Company Name]. Feel free to provide feedback to help us improve future workshops!*
