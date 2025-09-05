@@ -575,6 +575,88 @@ export default [
 ];
 ```
 
+> 💡 **TypeScript Configuration**: If you chose TypeScript when creating your Vite project, use the TypeScript configuration below instead.
+
+### 8.2.1 ESLint Configuration for TypeScript Projects
+
+If you created your project with TypeScript, replace the above JavaScript config with this TypeScript version:
+
+**First, install the TypeScript ESLint dependencies:**
+
+```bash
+npm install --save-dev @eslint/js @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react eslint-plugin-react-hooks
+```
+
+**Then create your `eslint.config.js` file:**
+
+```javascript
+import js from '@eslint/js';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsparser from '@typescript-eslint/parser';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+
+export default [
+  {
+    ignores: ['dist'],
+  },
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      parser: tsparser,
+      ecmaVersion: 2020,
+      globals: {
+        ...globalThis,
+      },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
+        sourceType: 'module',
+        project: './tsconfig.json',
+      },
+    },
+    settings: { 
+      react: { version: '18.3' } 
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+      react,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      ...react.configs['jsx-runtime'].rules,
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+      // Disable conflicting rules for TypeScript
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'error',
+      'no-undef': 'off', // TypeScript handles this
+      // TypeScript specific rules
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/prefer-const': 'error',
+      // Common rules
+      'no-console': 'warn',
+      'react/prop-types': 'off', // TypeScript handles prop validation
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'semi': ['error', 'always'],
+      'quotes': ['error', 'single'],
+      'indent': ['error', 2],
+    },
+  },
+];
+```
+
 ### 8.3 Linting Scripts
 
 The linting scripts are already configured in your `package.json`. You can run:
